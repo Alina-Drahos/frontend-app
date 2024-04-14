@@ -21,6 +21,9 @@ newJoke: string;
 responseHandler :() => void;
 }
 
+interface DeleteJokeButtonProps{
+  responseHandler :() => void;
+}
 
 function postRequest(props:Joke): Promise<Response>  {
   return fetch('http://localhost:3000/jokes',{
@@ -32,6 +35,18 @@ function postRequest(props:Joke): Promise<Response>  {
       "Content-Type": "application/json",
     },
     
+  })
+}
+
+function deleteRequest(props:number) : Promise<Response>{
+
+  return fetch(`http://localhost:3000/jokes/:${props}`,{
+    method: 'DELETE', 
+    mode: 'cors', 
+    body: JSON.stringify(props),// body data type must match "Content-Type" header
+    headers: {
+      "Content-Type": "application/javascript",
+    },
   })
 }
 
@@ -70,6 +85,14 @@ function GetAllJokesButton(props: MyBottonPropsAllJokes){
       </div>
     )
   }
+
+  function DeleteJokeButton(props: DeleteJokeButtonProps){
+    return(
+      <div>
+        <button onClick={props.responseHandler}>Click me to delete a joke</button>
+      </div>
+    )
+  }
   
   function AddJokeForm(){
     const [newJoke, setNewJoke]= useState("");
@@ -86,9 +109,31 @@ function GetAllJokesButton(props: MyBottonPropsAllJokes){
     <>
     <form>
       <AddJokeButton newJoke={newJoke} responseHandler={handleClick} />
+      <label>
       <input name="myInput" onChange={e=>setNewJoke(e.target.value)} value={newJoke}/>
+      </label>
     </form>
     </>
+  )
+}
+
+  function DeleteJokeById(){
+
+  const [deletedJokdId, setIdToDelete]= useState(-1);
+  async function handleClick(){
+    const response = await deleteRequest(deletedJokdId);
+    let data =await response.text();
+    console.log(data);
+  }
+  
+  return(
+    <>
+      <DeleteJokeButton responseHandler={handleClick}/>
+      <label>
+        <input name="DeleteByIdInput" type="number" onChange={e=>setIdToDelete(e.target.valueAsNumber)}></input>
+      </label>
+    </>
+
   )
 }
 
@@ -121,6 +166,8 @@ function App() {
       </p>
       <hr/>
       <AddJokeForm />
+      <hr/>
+      <DeleteJokeById/>
      </>
   )
 }
