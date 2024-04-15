@@ -137,6 +137,19 @@ function GetAllJokesButton(props: MyBottonPropsAllJokes){
   )
 }
 
+function StartCallButton(){
+
+  async function handleClick(){
+    const response = await fetch('http://localhost:3000/api/create_link_token')
+  
+    console.log(response);
+  }
+  return(
+    <>
+    <button onClick={handleClick}>Start a call to the backend to get Plaid going</button>
+    </>
+  )
+}
 
 function App() {
   const [jokeText, setJokeText] = useState('');
@@ -168,6 +181,8 @@ function App() {
       <AddJokeForm />
       <hr/>
       <DeleteJokeById/>
+      <hr/>
+      <StartCallButton/>
      </>
   )
 }
