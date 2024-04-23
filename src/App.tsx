@@ -1,7 +1,10 @@
 //import reactLogo from './assets/react.svg'
 //import viteLogo from '/vite.svg'
 import './App.css'
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
+import Link from './Link';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 
 interface Joke{
   id :number,
@@ -24,6 +27,10 @@ responseHandler :() => void;
 interface DeleteJokeButtonProps{
   responseHandler :() => void;
 }
+
+// interface ShowLinkApp{
+//   responseHander :(token:string)=> void;
+// }
 
 function postRequest(props:Joke): Promise<Response>  {
   return fetch('http://localhost:3000/jokes',{
@@ -124,6 +131,7 @@ function GetAllJokesButton(props: MyBottonPropsAllJokes){
     const response = await deleteRequest(deletedJokdId);
     let data =await response.text();
     console.log(data);
+
   }
   
   return(
@@ -137,23 +145,37 @@ function GetAllJokesButton(props: MyBottonPropsAllJokes){
   )
 }
 
-function StartCallButton(){
-
-  async function handleClick(){
-    const response = await fetch('http://localhost:3000/api/create_link_token')
-  
-    console.log(response);
-  }
-  return(
-    <>
-    <button onClick={handleClick}>Start a call to the backend to get Plaid going</button>
-    </>
-  )
+interface LinkData{
+ ExpirationData : Date,
+ link_token : string,
+ request_id: string
 }
+
+// function StartCallButton(props: ShowLinkApp){
+
+//   async function handleClick(){
+//     const response = await fetch('http://localhost:3000/api/create_link_token')
+  
+//     console.log(response);
+//     const result = (await response.json()) as LinkData
+//     if(result.link_token!=null && result.request_id!=null){
+//       props.responseHander(result.link_token);
+//     }
+
+//   }
+//   return(
+//     <>
+//     <button onClick={handleClick}>Start a call to the backend to get Plaid going</button>
+//     </>
+//   )
+// }
+
+
 
 function App() {
   const [jokeText, setJokeText] = useState('');
   const [jokeTexts, setJokeTexts] = useState([] as Joke[]);
+  const [linkToken, setLinkToken] = useState('');
   
 
   function callBack(joke: Joke){
@@ -165,25 +187,57 @@ function App() {
     setJokeTexts(newJokes);
   }
 
+  //  function callBackDisplayPlaidTab(token:string){
+  //   setLinkToken(token);
+  // }
+
+  const [currentTabIndex, setCurrentTabIndex] = useState(0);
+ 
+  const handleTabChange = (e:React.SyntheticEvent, tabIndex: number) => {
+    console.log(tabIndex);
+    setCurrentTabIndex(tabIndex);
+  };
+
+     useEffect(() => {
+      handleClick();      
+    },[]);
+
+    async function handleClick(){
+      const response = await fetch('http://localhost:3000/api/create_link_token')
+    
+      console.log(response);
+      const result = (await response.json()) as LinkData
+      if(result.link_token!=null && result.request_id!=null){
+        setLinkToken(result.link_token);
+      }
   
+    }
+  
+
   return (
      <>
-     <button onClick={()=>{setJokeTexts([]); setJokeText('')}}>Clear all Jokes</button>
-     <hr/>
-      <GetRandomJokeButton responseHandler={callBack} />
-      <p>{jokeText}</p>
-      <hr/>
-      <GetAllJokesButton responseHandler={callBackAllJokes}/>
-      <p>
-        {jokeTexts.map(joke =><li key={joke.id}>{joke.joke}</li>)}
-      </p>
-      <hr/>
-      <AddJokeForm />
-      <hr/>
-      <DeleteJokeById/>
-      <hr/>
-      <StartCallButton/>
-     </>
+     <Tabs value={currentTabIndex} onChange={handleTabChange}>
+        <Tab label='Tab 1'/> 
+        <Tab label='Tab 2' />
+      </Tabs> 
+      { currentTabIndex == 1 ? <>{linkToken? <Link linkToken={linkToken}/> :<></>}  </> : undefined }
+      {currentTabIndex == 0 ? 
+      <>
+        <button onClick={()=>{setJokeTexts([]); setJokeText('')}}>Clear all Jokes</button>
+        <hr/>
+          <GetRandomJokeButton responseHandler={callBack} />
+          <p>{jokeText}</p>
+          <hr/>
+          <GetAllJokesButton responseHandler={callBackAllJokes}/>
+          <p>
+            {jokeTexts.map(joke =><li key={joke.id}>{joke.joke}</li>)}
+          </p>
+          <hr/>
+          <AddJokeForm />
+          <hr/>
+          <DeleteJokeById/>
+        </> : undefined}
+      </>
   )
 }
 
